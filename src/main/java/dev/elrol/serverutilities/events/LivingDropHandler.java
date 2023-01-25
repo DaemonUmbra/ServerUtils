@@ -13,8 +13,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 public class LivingDropHandler {
     @SubscribeEvent
     public void onLivingDrop(LivingDropsEvent event) {
-        if(event.getEntity() instanceof ServerPlayer) {
-            ServerPlayer player = (ServerPlayer)event.getEntity();
+        if(event.getEntity() instanceof ServerPlayer player) {
             IPlayerData data = Main.database.get(player.getUUID());
             if(data.isJailed()) {
                 event.setCanceled(true);

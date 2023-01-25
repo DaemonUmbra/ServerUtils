@@ -11,8 +11,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 public class PlayerDeathHandler {
     @SubscribeEvent
     public void onLivingDeath(LivingDeathEvent event) {
-        if (event.getEntity() instanceof ServerPlayer) {
-            ServerPlayer player = (ServerPlayer) event.getEntity();
+        if (event.getEntity() instanceof ServerPlayer player) {
             IPlayerData data = Main.database.get(player.getUUID());
             if(CommandConfig.back_enable_on_death.get()) data.setPrevLoc(new Location(player));
         }

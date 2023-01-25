@@ -2,6 +2,7 @@ plugins {
     id 'eclipse'
     id 'maven-publish'
     id 'net.minecraftforge.gradle' version '5.1.+'
+    id 'org.parchmentmc.librarian.forgegradle' version '1.+'
     id 'com.github.johnrengelman.shadow' version '7.1.0'
 }
 
@@ -33,7 +34,7 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
 minecraft {
-    mappings channel: 'official', version: '1.19.2'
+    mappings channel: 'parchment', version: '2022.12.18-1.19.3'
     runs {
         client {
             workingDirectory project.file('run')
@@ -109,7 +110,7 @@ repositories {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.19.2-43.1.1'
+    minecraft "net.minecraftforge:forge:${modMinecraftVersion}-${modForgeVersion}"
     library (group:'net.dv8tion', name:'JDA', version:'5.0.0-alpha.1') {
         exclude module: 'opus-java'
         exclude module: 'slf4j-api'
@@ -140,11 +141,19 @@ task apiJar(type: Jar) {
     classifier 'api'
 }
 
+import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
+task relocateShadowJar(type: ConfigureShadowRelocation) {
+    target = tasks.shadowJar
+    prefix = "dev.elrol.serverutilities.shaded"
+}
+
 shadowJar {
+    mergeServiceFiles()
     from sourceSets.api.output
     from sourceSets.main.output
     configurations = [project.configurations.library]
     archiveClassifier = ''
+    dependsOn tasks.named("relocateShadowJar")
 }
 
 reobf {

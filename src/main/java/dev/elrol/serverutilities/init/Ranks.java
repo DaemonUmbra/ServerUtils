@@ -8,11 +8,8 @@ import dev.elrol.serverutilities.libs.JsonMethod;
 import dev.elrol.serverutilities.libs.Logger;
 import dev.elrol.serverutilities.libs.ModInfo;
 import dev.elrol.serverutilities.libs.Permissions;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundPlayerInfoPacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.players.PlayerList;
-import net.minecraft.world.entity.player.Player;
 
 import java.io.File;
 import java.util.*;
@@ -106,7 +103,7 @@ public class Ranks {
     public static void sendTabDisplaysToPlayer(ServerPlayer player)
     {
         player.getServer().getPlayerList().getPlayers().forEach(
-            (ServerPlayer otherPlayer) -> player.connection.send(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.UPDATE_DISPLAY_NAME, otherPlayer))
+            (ServerPlayer otherPlayer) -> player.connection.send(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME, otherPlayer))
         );
     }
 }

@@ -15,13 +15,13 @@ A mod that adds server related commands and Utilities
 [[dependencies.serverutilities]] #optional
 modId="forge" #mandatory
 mandatory=true #mandatory
-versionRange="[43,)" #mandatory
+versionRange="[44,45)" #mandatory
 ordering="NONE"
 side="BOTH"
 
 [[dependencies.serverutilities]]
 modId="minecraft"
 mandatory=true
-versionRange="[1.19,)"
+versionRange="[1.19.3,1.20)"
 ordering="NONE"
 side="BOTH"

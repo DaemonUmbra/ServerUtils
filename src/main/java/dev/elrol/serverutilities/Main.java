@@ -13,6 +13,7 @@ import dev.elrol.serverutilities.libs.JsonMethod;
 import dev.elrol.serverutilities.libs.Logger;
 import dev.elrol.serverutilities.libs.ModInfo;
 import dev.elrol.serverutilities.libs.text.TextUtils;
+import dev.elrol.serverutilities.events.ChatEventHandler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.IExtensionPoint;
@@ -94,7 +95,7 @@ public class Main {
 
         loadKits();
 
-        ChatEventHandler.registerChatHandler();
+        MinecraftForge.EVENT_BUS.register(new ChatEventHandler());
         MinecraftForge.EVENT_BUS.register(new EntityEventHandler());
         MinecraftForge.EVENT_BUS.register(new LivingDropHandler());
 

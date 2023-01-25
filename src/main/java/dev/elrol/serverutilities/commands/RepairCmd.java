@@ -95,7 +95,7 @@ extends _CmdBase {
                 ItemStack stack = this.player.getMainHandItem();
                 String resource = stack.getItem().getDescriptionId();
                 if(!resource.isEmpty()) {
-                    String id = resource.toString();
+                    String id = resource;
                     if (Main.blacklists.repair_blacklist.contains(id)) {
                         Main.textUtils.err(this.player, Errs.repair_blacklist(id));
                         return;

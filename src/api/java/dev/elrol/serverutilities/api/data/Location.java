@@ -3,6 +3,7 @@ package dev.elrol.serverutilities.api.data;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -61,7 +62,7 @@ public class Location {
     }
 
     public ResourceKey<Level> getLevel(){
-        return ResourceKey.create(Registry.DIMENSION_REGISTRY,  world);
+        return ResourceKey.create(Registries.DIMENSION,  world);
     }
 
     public ServerLevel getLevelObj(){
