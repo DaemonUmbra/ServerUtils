@@ -32,16 +32,29 @@ public class MotdCmd extends _CmdBase {
     public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         for (String a : aliases) {
             if(name.isEmpty()) name = a;
-                dispatcher.register(Commands.literal(a)
-                        .executes(this::execute)
-                        .then(Commands.literal("set")
-                                .then(Commands.argument("motd", StringArgumentType.greedyString())
-                                        .requires(p -> IElrolAPI.getInstance().getPermissionHandler().hasPermission(p, CommandConfig.motd_modify_perm.get()))
-                                        .executes(c -> execute(c, StringArgumentType.getString(c, "motd"))))));
+            dispatcher.register(Commands.literal(a)
+                    .executes(this::execute)
+                    .then(Commands.literal("set")
+                            .then(Commands.argument("motd", StringArgumentType.greedyString())
+                                    .requires(p -> IElrolAPI.getInstance().getPermissionHandler().hasPermission(p, CommandConfig.motd_modify_perm.get()))
+                                    .executes(c -> set(c, StringArgumentType.getString(c, "motd")))
+                            )
+                    )
+                    .then(Commands.literal("unset")
+                            .requires(p -> IElrolAPI.getInstance().getPermissionHandler().hasPermission(p, CommandConfig.motd_modify_perm.get()))
+                            .executes(this::unset)
+                    )
+            );
         }
     }
 
-    protected int execute(CommandContext<CommandSourceStack> c, String motd) {
+    protected int unset(CommandContext<CommandSourceStack> ignored)
+    {
+        Main.serverData.setMOTD("");
+        return 1;
+    }
+
+    protected int set(CommandContext<CommandSourceStack> c, String motd) {
         Main.serverData.setMOTD(motd);
         Main.textUtils.msg(c.getSource(), Msgs.setMOTD.get());
         return 1;
