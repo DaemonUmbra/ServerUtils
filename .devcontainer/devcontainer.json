@@ -1,0 +1,17 @@
+{
+  $schema: "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
+  "name": "ServerUtils Dev",
+  "image": "eclipse-temurin:17-jdk",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "vscjava.vscode-gradle",
+        "ms-vscode-remote.remote-containers"
+      ]
+    }
+  }
+}

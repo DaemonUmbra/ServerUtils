@@ -1,176 +1,131 @@
 plugins {
     id 'eclipse'
     id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '5.1.+'
+    id 'net.neoforged.gradle' version '6.+'
     id 'org.parchmentmc.librarian.forgegradle' version '1.+'
-    id 'com.github.johnrengelman.shadow' version '7.1.0'
 }
 
 sourceSets {
-    api {
-        java {
-            srcDir 'src/api/java'
-        }
-        compileClasspath += configurations.getByName("minecraft")
-    }
-    main {
-        java {
-            srcDir 'src/main/java'
-        }
-        resources {
-            srcDir 'src/main/resources'
-            srcDir 'src/main/generated/resources'
-        }
-        compileClasspath += compileClasspath += sourceSets.api.output
-    }
+    api
+    generated
+}
+
+configurations {
+    apiCompileClasspath.extendsFrom(minecraft)
 }
 
 version = modMinecraftVersion + "-" + modVersion
 group = modGroup
 archivesBaseName = modFileName
 
-// Mojang ships Java 17 to end users in 1.18+, so your mod should target Java 17.
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+java.toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
 minecraft {
-    mappings channel: 'parchment', version: '2022.12.18-1.19.3'
+    mappings channel: 'parchment', version: '1.19.2-2022.11.27-1.19.4'
     runs {
         client {
-            workingDirectory project.file('run')
+            workingDirectory file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
             property 'forge.enabledGameTestNamespaces', 'serverutilities'
 
             mods {
                 serverutilities {
-                    source sourceSets.main
-                    source sourceSets.api
+                    source sourceSets.main as SourceSet
+                    source sourceSets.api as SourceSet
                 }
             }
         }
 
         server {
-            workingDirectory project.file('run')
+            workingDirectory file('run')
+            args 'nogui'
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
             property 'forge.enabledGameTestNamespaces', 'serverutilities'
 
             mods {
                 serverutilities {
-                    source sourceSets.main
-                    source sourceSets.api
+                    source sourceSets.main as SourceSet
+                    source sourceSets.api as SourceSet
                 }
             }
         }
         gameTestServer {
-            workingDirectory project.file('run')
+            workingDirectory file('run')
+            args 'nogui'
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
             property 'forge.enabledGameTestNamespaces', 'serverutilities'
 
             mods {
                 serverutilities {
-                    source sourceSets.main
-                    source sourceSets.api
+                    source sourceSets.main as SourceSet
+                    source sourceSets.api as SourceSet
                 }
             }
         }
 
         data {
-            workingDirectory project.file('run')
+            workingDirectory file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
             args '--mod', 'serverutilities', '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
 
             mods {
                 serverutilities {
-                    source sourceSets.main
-                    source sourceSets.api
+                    source sourceSets.main as SourceSet
+                    source sourceSets.api as SourceSet
                 }
             }
         }
     }
 }
 
-configurations {
-    library
-    implementation.extendsFrom library
-}
-
-minecraft.runs.all {
-    lazyToken('minecraft_classpath') {
-        configurations.library.copyRecursive().resolve().collect { it.absolutePath }.unique().join(File.pathSeparator)
-    }
-}
-
-sourceSets.main.resources { srcDir 'src/generated/resources' }
-
 repositories {
+    mavenLocal()
+    maven { url = 'https://maven.neoforged.net' }
+    maven { url = 'https://maven.minecraftforge.net' }
+    mavenCentral()
 }
 
 dependencies {
     minecraft "net.minecraftforge:forge:${modMinecraftVersion}-${modForgeVersion}"
-    library (group:'net.dv8tion', name:'JDA', version:'5.0.0-alpha.1') {
-        exclude module: 'opus-java'
-        exclude module: 'slf4j-api'
-        exclude module: 'annotations'
-        exclude module: 'jsr305'
-    }
+    implementation sourceSets.named('api').map { it.output }
 }
 
-jar {
-    from sourceSets.api.output
-    from sourceSets.main.output
-    classifier 'slim'
+tasks.register('apiJar', Jar.class) {
+    from sourceSets.named('api').map {it.output }
+    setArchiveClassifier 'api'
     manifest {
         attributes([
                 "Specification-Title"     : "serverutilities",
-                "Specification-Vendor"    : "serverutilities",
-                "Specification-Version"   : "1", // We are version 1 of ourselves
+                "Specification-Vendor"    : "ArrowsendGaming",
+                "Specification-Version"   : "3.0.0"
+        ])
+    }
+}
+
+tasks.named('jar') {
+    manifest {
+        from tasks.named('apiJar', org.gradle.jvm.tasks.Jar).map {it.manifest }
+        attributes([
                 "Implementation-Title"    : project.name,
-                "Implementation-Version"  : project.jar.archiveVersion,
-                "Implementation-Vendor"   : "serverutilities",
+                "Implementation-Version"  : project.tasks.named('jar', org.gradle.jvm.tasks.Jar).map { archiveVersion },
+                "Implementation-Vendor"   : "DaemonUmbra",
                 "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
 }
 
-task apiJar(type: Jar) {
-    from sourceSets.api.output
-    classifier 'api'
+tasks.named('jar') {
+    finalizedBy('reobfJar')
 }
-
-import com.github.jengelman.gradle.plugins.shadow.tasks.ConfigureShadowRelocation
-task relocateShadowJar(type: ConfigureShadowRelocation) {
-    target = tasks.shadowJar
-    prefix = "dev.elrol.serverutilities.shaded"
-}
-
-shadowJar {
-    mergeServiceFiles()
-    from sourceSets.api.output
-    from sourceSets.main.output
-    configurations = [project.configurations.library]
-    archiveClassifier = ''
-    dependsOn tasks.named("relocateShadowJar")
-}
-
-reobf {
-    jar {}
-    apiJar {}
-    shadowJar {}
-}
-
-tasks.named("processResources") {
-    duplicatesStrategy = 'exclude'
-}
-
-jar.finalizedBy('reobfJar')
 
 publishing {
     publications {
-        mavenJava(MavenPublication) {
+        register('mavenJava', MavenPublication.class) {
             artifact jar
         }
     }
